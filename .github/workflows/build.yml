@@ -1,4 +1,4 @@
-name: Build Android APK
+       name: Build Android APK
 
 on:
   push:
@@ -30,10 +30,10 @@ jobs:
         if [ -d "app/src/main/java" ]; then
           find app/src/main/java -name "*.java" > sources.txt
           if [ -s sources.txt ]; then
-            javac -d build/compiled @sources.txt || true
+            javac -cp /usr/lib/android/android.jar -d build/compiled @sources.txt || true
           fi
         elif [ -f "MainActivity.java" ]; then
-          javac -d build/compiled *.java || true
+          javac -cp /usr/lib/android/android.jar -d build/compiled *.java || true
         fi
         
         if [ -d "build/compiled" ] && [ "$(ls -A build/compiled)" ]; then
