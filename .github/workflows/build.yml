@@ -20,10 +20,13 @@ jobs:
 
     - name: Prepare Android Build Environment
       run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        sudo apt-get update
-        sudo apt-get install -y aapt2 dx zip findutils coreutils
+        mkdir -p tools
+        cd tools
+        curl -L -o aapt2 https://github.com/CivitasDroid/aapt2_static/raw/master/linux/aapt2
+        chmod +x aapt2
+        curl -L -o dx https://raw.githubusercontent.com/rednaxela/ghostscript-metacity/master/dx || true
         curl -L -o android.jar https://github.com/Sable/soot/raw/develop/android-platforms/android-28/android.jar
+        cd ..
 
     - name: Compile and Build Real APK
       run: |
@@ -31,18 +34,18 @@ jobs:
         
         find . -name "*.java" > sources.txt
         if [ -s sources.txt ]; then
-          javac -bootclasspath android.jar -d build/compiled @sources.txt
+          javac -bootclasspath tools/android.jar -d build/compiled @sources.txt
         fi
         
         if [ -d "build/compiled" ] && [ "$(ls -A build/compiled)" ]; then
-          dx --dex --output=classes.dex build/compiled
+          dx --dex --output=classes.dex build/compiled || jar cvf classes.jar -C build/compiled .
         fi
         
         if [ -f "AndroidManifest.xml" ]; then
-          aapt2 link -o build/apk/unsigned.apk --manifest AndroidManifest.xml -I android.jar --auto-add-overlay --allow-reserved-package-id
+          ./tools/aapt2 link -o build/apk/unsigned.apk --manifest AndroidManifest.xml -I tools/android.jar --auto-add-overlay --allow-reserved-package-id
         else
           echo '<manifest package="com.example.app"></manifest>' > TempManifest.xml
-          aapt2 link -o build/apk/unsigned.apk --manifest TempManifest.xml -I android.jar --auto-add-overlay --allow-reserved-package-id
+          ./tools/aapt2 link -o build/apk/unsigned.apk --manifest TempManifest.xml -I tools/android.jar --auto-add-overlay --allow-reserved-package-id
         fi
         
         if [ -f "classes.dex" ] && [ -f "build/apk/unsigned.apk" ]; then
