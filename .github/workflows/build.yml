@@ -21,7 +21,7 @@ jobs:
     - name: Prepare Android Build Environment
       run: |
         sudo apt-get update || true
-        sudo apt-get install -y aapt dx || true
+        sudo apt-get install -y aapt2 dx zip || true
         curl -L -o android.jar https://github.com/Sable/soot/raw/develop/android-platforms/android-28/android.jar || true
 
     - name: Compile and Build Real APK
@@ -42,11 +42,11 @@ jobs:
         fi
         
         if [ -f "AndroidManifest.xml" ]; then
-          aapt package -f -M AndroidManifest.xml -I android.jar -F build/apk/unsigned.apk || true
+          aapt2 link -o build/apk/unsigned.apk --manifest AndroidManifest.xml -I android.jar --auto-add-overlay --allow-reserved-package-id || true
         fi
         
         if [ -f "classes.dex" ] && [ -f "build/apk/unsigned.apk" ]; then
-          aapt add build/apk/unsigned.apk classes.dex || true
+          zip -u build/apk/unsigned.apk classes.dex || true
         fi
         
         if [ ! -f "build/apk/unsigned.apk" ]; then
