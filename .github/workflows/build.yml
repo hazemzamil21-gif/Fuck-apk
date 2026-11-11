@@ -37,7 +37,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug
         else
-          echo "Project structure is being packaged..."
+          echo "No gradlew found, skipping build phase safely."
         fi
 
     - name: Upload APK Artifact
