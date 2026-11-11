@@ -28,6 +28,7 @@ jobs:
       run: |
         mkdir -p build/compiled build/apk
         
+        # 1. ترجمة ملفات الجافا مع تضمين مكتبات أندرويد
         if [ -d "app/src/main/java" ]; then
           find app/src/main/java -name "*.java" > sources.txt
           if [ -s sources.txt ]; then
@@ -35,18 +36,26 @@ jobs:
           fi
         elif [ -f "MainActivity.java" ]; then
           javac -bootclasspath android.jar -d build/compiled *.java || true
+        else
+          find . -maxdepth 2 -name "*.java" > sources.txt
+          if [ -s sources.txt ]; then
+            javac -bootclasspath android.jar -d build/compiled @sources.txt || true
+          fi
         fi
         
+        # 2. تحويل مخرجات الجافا إلى ملف classes.dex
         if [ -d "build/compiled" ] && [ "$(ls -A build/compiled)" ]; then
           dx --dex --output=classes.dex build/compiled || true
         fi
         
+        # 3. ربط الـ Manifest والموارد بـ aapt2 لإنشاء هيكل الـ APK
         if [ -f "AndroidManifest.xml" ]; then
           aapt2 link -o build/apk/unsigned.apk --manifest AndroidManifest.xml -I android.jar --auto-add-overlay --allow-reserved-package-id || true
         fi
         
+        # 4. حقن ملف الclasses.dex الفعلي داخل حزمة الـ APK
         if [ -f "classes.dex" ] && [ -f "build/apk/unsigned.apk" ]; then
-          zip -u build/apk/unsigned.apk classes.dex || true
+          zip -uj build/apk/unsigned.apk classes.dex || true
         fi
         
         if [ ! -f "build/apk/unsigned.apk" ]; then
