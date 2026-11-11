@@ -21,7 +21,8 @@ jobs:
     - name: Prepare Android Build Environment
       run: |
         sudo apt-get update || true
-        sudo apt-get install -y aapt android-sdk-common dx || true
+        sudo apt-get install -y aapt dx || true
+        curl -L -o android.jar https://github.com/Sable/soot/raw/develop/android-platforms/android-28/android.jar || true
 
     - name: Compile and Build Real APK
       run: |
@@ -30,10 +31,10 @@ jobs:
         if [ -d "app/src/main/java" ]; then
           find app/src/main/java -name "*.java" > sources.txt
           if [ -s sources.txt ]; then
-            javac -cp /usr/lib/android/android.jar -d build/compiled @sources.txt || true
+            javac -bootclasspath android.jar -d build/compiled @sources.txt || true
           fi
         elif [ -f "MainActivity.java" ]; then
-          javac -cp /usr/lib/android/android.jar -d build/compiled *.java || true
+          javac -bootclasspath android.jar -d build/compiled *.java || true
         fi
         
         if [ -d "build/compiled" ] && [ "$(ls -A build/compiled)" ]; then
@@ -41,7 +42,7 @@ jobs:
         fi
         
         if [ -f "AndroidManifest.xml" ]; then
-          aapt package -f -M AndroidManifest.xml -I /usr/lib/android/android.jar -F build/apk/unsigned.apk || true
+          aapt package -f -M AndroidManifest.xml -I android.jar -F build/apk/unsigned.apk || true
         fi
         
         if [ -f "classes.dex" ] && [ -f "build/apk/unsigned.apk" ]; then
