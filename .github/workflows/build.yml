@@ -25,7 +25,7 @@ jobs:
         curl -L -o aapt2 https://github.com/CivitasDroid/aapt2_static/raw/master/linux/aapt2
         chmod +x aapt2
         curl -L -o dx https://raw.githubusercontent.com/rednaxela/ghostscript-metacity/master/dx || true
-        curl -L -o android.jar https://github.com/Sable/soot/raw/develop/android-platforms/android-28/android.jar
+        curl -L -o android.jar https://github.com/fraporosa/android-jar/raw/master/android-28.jar
         cd ..
 
     - name: Compile and Build Real APK
